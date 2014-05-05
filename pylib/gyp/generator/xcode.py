@@ -75,6 +75,7 @@ generator_additional_non_configuration_keys = [
   'mac_framework_private_headers',
   'mac_xctest_bundle',
   'xcode_create_dependents_test_runner',
+  'shell',
 ]
 
 # We want to let any rules apply to files that are resources also.
@@ -1070,6 +1071,19 @@ exit 1
       for group in groups:
         for item in rule.get(group, []):
           pbxp.AddOrGetFileInRootGroup(item)
+
+    # Add "Shell Script". (for fake framework in ios)
+    if 'shell' in spec:
+      shellPath = spec['shell'].get('shellPath')
+      shellScript = spec['shell'].get('shellScript')
+      #print 'shellPath:' + shellPath + ' shellScript:' + shellScript
+      if shellPath is not None and shellScript is not None:
+        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+                  'shellPath':        shellPath,
+                  'shellScript':      shellScript,
+                  'showEnvVarsInLog': 0,
+                })
+      xct.AppendProperty('buildPhases', ssbp)
 
     # Add "sources".
     for source in spec.get('sources', []):
