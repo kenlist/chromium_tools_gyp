@@ -868,14 +868,18 @@ class NinjaWriter:
                                                   self.GypPathToNinja)])
 
     include_dirs = config.get('include_dirs', [])
+    include_files = config.get('include_files', [])
 
     env = self.GetToolchainEnv()
     if self.flavor == 'win':
       include_dirs = self.msvs_settings.AdjustIncludeDirs(include_dirs,
                                                           config_name)
-    self.WriteVariableList(ninja_file, 'includes',
-        [QuoteShellArgument('-I' + self.GypPathToNinja(i, env), self.flavor)
-         for i in include_dirs])
+    
+    include_str = [QuoteShellArgument('-I' + self.GypPathToNinja(i, env), self.flavor)
+                  for i in include_dirs] + [QuoteShellArgument('-include' + self.GypPathToNinja(i, env), self.flavor)
+                  for i in include_files]
+
+    self.WriteVariableList(ninja_file, 'includes', include_str)        
 
     pch_commands = precompiled_header.GetPchBuildCommands(arch)
     if self.flavor == 'mac':
